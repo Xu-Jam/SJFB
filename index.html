@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>随机分布</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      border: 1px solid #333;
+      padding: 10px;
+      text-align: center;
+      background-color: #fff;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    h1 {
+      color: #333;
+    }
+    button {
+      padding: 10px 15px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h1>随机分布</h1>
+  <label for="materialCount">材料数量:</label>
+  <input type="number" id="materialCount" min="1" value="14">
+  <button onclick="generateTwoRandomRows()">后两行随机</button>
+  <button onclick="generateThreeRandomRows()">全随机</button>
+  <br><br>
+  <div id="distribution"></div>
+
+  <script>
+    // 定义分组数
+    const GROUP_COUNT = 3;
+
+    // 根据总数和旋转偏移分组
+    function getGroups(count, rotation = 0) {
+      const numbers = Array.from({ length: count }, (_, i) => (i + 1));
+      const rotatedNumbers = rotateArray(numbers, rotation);
+      const baseSize = Math.floor(count / GROUP_COUNT);
+      const remainder = count % GROUP_COUNT;
+      const groups = [];
+      let start = 0;
+      for (let i = 0; i < GROUP_COUNT; i++) {
+        let groupSize = baseSize + (i < remainder ? 1 : 0);
+        let group = rotatedNumbers.slice(start, start + groupSize);
+        groups.push(group);
+        start += groupSize;
+      }
+      return groups;
+    }
+
+    // 旋转数组
+    function rotateArray(array, rotation) {
+      const rotateBy = rotation % array.length;
+      return array.slice(rotateBy).concat(array.slice(0, rotateBy));
+    }
+
+    // 生成有序行
+    function generateOrderedRow(count) {
+      return Array.from({ length: count }, (_, i) => i + 1);
+    }
+
+    // 生成随机旋转的分组行，确保约束条件
+    function generateGroupedRandomRow(count, existingDistribution = []) {
+      const maxRotation = count;
+      const rotations = Array.from({ length: maxRotation }, (_, i) => i);
+      shuffleArray(rotations); // 随机旋转顺序
+
+      for (let rotation of rotations) {
+        const row = getGroups(count, rotation).flat();
+        if (isDistributionValid(row, existingDistribution)) {
+          return row;
+        }
+      }
+
+      // 如果尝试所有旋转都无法满足条件，则返回 null
+      return null;
+    }
+
+    // 验证分布的有效性（保持列和相邻列唯一）
+    function isDistributionValid(row, distribution) {
+      for (let i = 0; i < row.length; i++) {
+        const currentNumber = row[i];
+        for (let d = 0; d < distribution.length; d++) {
+          const existingRow = distribution[d];
+          for (let j = 0; j < existingRow.length; j++) {
+            if (existingRow[j] === currentNumber) {
+              // 检查相同列
+              if (j === i) {
+                return false;
+              }
+              // 检查相邻列
+              if (Math.abs(j - i) === 1) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    // 洗牌算法（打乱数组顺序）
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // 显示分布结果
+    function displayDistribution(distribution) {
+      const distributionDiv = document.getElementById("distribution");
+      let html = "<table>";
+      distribution.forEach((row, index) => {
+        html += `<tr><th>行 ${index + 1}</th>` + row.map(value => `<td>${value}</td>`).join('') + "</tr>";
+      });
+      html += "</table>";
+      distributionDiv.innerHTML = html;
+    }
+
+    // 生成后两行随机分布（第一行有序，后两行为随机旋转）
+    function generateTwoRandomRows() {
+      const materialCount = parseInt(document.getElementById("materialCount").value);
+      
+      if (materialCount < GROUP_COUNT) {
+        alert(`材料数量至少为 ${GROUP_COUNT}`);
+        return;
+      }
+
+      const distribution = [generateOrderedRow(materialCount)];
+
+      // 生成后两行，按旋转随机
+      for (let i = 0; i < 2; i++) {
+        const row = generateGroupedRandomRow(materialCount, distribution);
+        if (row) {
+          distribution.push(row);
+        } else {
+          alert("无法生成符合条件的后两行随机分布，请尝试增加材料数量或调整条件。");
+          return;
+        }
+      }
+
+      displayDistribution(distribution);
+    }
+
+    // 生成全随机的三行分布
+    function generateThreeRandomRows() {
+      const materialCount = parseInt(document.getElementById("materialCount").value);
+      
+      if (materialCount < GROUP_COUNT) {
+        alert(`材料数量至少为 ${GROUP_COUNT}`);
+        return;
+      }
+
+      const distribution = [];
+
+      // 生成三行，按旋转随机
+      for (let i = 0; i < 3; i++) {
+        const row = generateGroupedRandomRow(materialCount, distribution);
+        if (row) {
+          distribution.push(row);
+        } else {
+          alert("无法生成符合条件的全随机分布，请尝试增加材料数量或调整条件。");
+          return;
+        }
+      }
+
+      displayDistribution(distribution);
+    }
+  </script>
+</body>
+</html>
