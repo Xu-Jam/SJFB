@@ -5,57 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>随机分布</title>
   <style>
+    /* 基础布局 */
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f9f9f9;
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #00d2ff, #3a7bd5);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: #fff;
+      overflow: hidden;
     }
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    th, td {
-      border: 1px solid #333;
-      padding: 10px;
-      text-align: center;
-      background-color: #fff;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
+
     h1 {
-      color: #333;
+      font-size: 2.5rem;
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
-    button {
-      padding: 10px 15px;
+
+    label {
+      font-size: 1.2rem;
       margin-right: 10px;
-      background-color: #007bff;
-      color: white;
-      border: none;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
       border-radius: 5px;
+      border: 2px solid #fff;
+      background-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
+      margin-right: 20px;
+      transition: 0.3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #00d2ff;
+      background-color: rgba(255, 255, 255, 0.5);
+    }
+
+    button {
+      background-color: #00d2ff;
+      border: none;
       cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease-in-out;
     }
+
     button:hover {
-      background-color: #0056b3;
+      background-color: #009bcf;
+      transform: scale(1.1);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
     }
+
+    button:active {
+      transform: scale(1);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    #distribution {
+      margin-top: 30px;
+      width: 80%;
+      max-width: 900px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      transition: transform 0.5s ease;
+    }
+
+    table:hover {
+      transform: scale(1.02);
+    }
+
+    th, td {
+      padding: 15px;
+      text-align: center;
+      font-size: 1.2rem;
+      border: 1px solid #00d2ff;
+    }
+
+    th {
+      background-color: #0078a0;
+      color: #fff;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    td {
+      background-color: #1e2b35;
+      color: #fff;
+      font-weight: 400;
+    }
+
+    tr:nth-child(even) td {
+      background-color: #273b4b;
+    }
+
+    tr:hover td {
+      background-color: #00d2ff;
+      color: #000;
+    }
+
   </style>
 </head>
 <body>
+
   <h1>随机分布</h1>
-  <label for="materialCount">材料数量:</label>
-  <input type="number" id="materialCount" min="1" value="14">
-  <button onclick="generateTwoRandomRows()">后两行随机</button>
-  <button onclick="generateThreeRandomRows()">全随机</button>
-  <br><br>
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <label for="materialCount">材料数量:</label>
+    <input type="number" id="materialCount" min="1" value="14">
+    <button onclick="generateTwoRandomRows()">后两行随机</button>
+    <button onclick="generateThreeRandomRows()">全随机</button>
+    <button onclick="copyToClipboard()">复制结果</button>
+  </div>
+
   <div id="distribution"></div>
 
   <script>
-    // 定义分组数
     const GROUP_COUNT = 3;
 
-    // 根据总数和旋转偏移分组
     function getGroups(count, rotation = 0) {
       const numbers = Array.from({ length: count }, (_, i) => (i + 1));
       const rotatedNumbers = rotateArray(numbers, rotation);
@@ -72,22 +156,19 @@
       return groups;
     }
 
-    // 旋转数组
     function rotateArray(array, rotation) {
       const rotateBy = rotation % array.length;
       return array.slice(rotateBy).concat(array.slice(0, rotateBy));
     }
 
-    // 生成有序行
     function generateOrderedRow(count) {
       return Array.from({ length: count }, (_, i) => i + 1);
     }
 
-    // 生成随机旋转的分组行，确保约束条件
     function generateGroupedRandomRow(count, existingDistribution = []) {
       const maxRotation = count;
       const rotations = Array.from({ length: maxRotation }, (_, i) => i);
-      shuffleArray(rotations); // 随机旋转顺序
+      shuffleArray(rotations);
 
       for (let rotation of rotations) {
         const row = getGroups(count, rotation).flat();
@@ -96,11 +177,9 @@
         }
       }
 
-      // 如果尝试所有旋转都无法满足条件，则返回 null
       return null;
     }
 
-    // 验证分布的有效性（保持列和相邻列唯一）
     function isDistributionValid(row, distribution) {
       for (let i = 0; i < row.length; i++) {
         const currentNumber = row[i];
@@ -108,14 +187,8 @@
           const existingRow = distribution[d];
           for (let j = 0; j < existingRow.length; j++) {
             if (existingRow[j] === currentNumber) {
-              // 检查相同列
-              if (j === i) {
-                return false;
-              }
-              // 检查相邻列
-              if (Math.abs(j - i) === 1) {
-                return false;
-              }
+              if (j === i) return false;
+              if (Math.abs(j - i) === 1) return false;
             }
           }
         }
@@ -123,7 +196,6 @@
       return true;
     }
 
-    // 洗牌算法（打乱数组顺序）
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -131,7 +203,6 @@
       }
     }
 
-    // 显示分布结果
     function displayDistribution(distribution) {
       const distributionDiv = document.getElementById("distribution");
       let html = "<table>";
@@ -142,18 +213,14 @@
       distributionDiv.innerHTML = html;
     }
 
-    // 生成后两行随机分布（第一行有序，后两行为随机旋转）
     function generateTwoRandomRows() {
       const materialCount = parseInt(document.getElementById("materialCount").value);
-      
       if (materialCount < GROUP_COUNT) {
         alert(`材料数量至少为 ${GROUP_COUNT}`);
         return;
       }
-
       const distribution = [generateOrderedRow(materialCount)];
 
-      // 生成后两行，按旋转随机
       for (let i = 0; i < 2; i++) {
         const row = generateGroupedRandomRow(materialCount, distribution);
         if (row) {
@@ -167,18 +234,14 @@
       displayDistribution(distribution);
     }
 
-    // 生成全随机的三行分布
     function generateThreeRandomRows() {
       const materialCount = parseInt(document.getElementById("materialCount").value);
-      
       if (materialCount < GROUP_COUNT) {
         alert(`材料数量至少为 ${GROUP_COUNT}`);
         return;
       }
-
       const distribution = [];
 
-      // 生成三行，按旋转随机
       for (let i = 0; i < 3; i++) {
         const row = generateGroupedRandomRow(materialCount, distribution);
         if (row) {
@@ -191,6 +254,28 @@
 
       displayDistribution(distribution);
     }
+
+   function copyToClipboard() {
+  const table = document.querySelector("#distribution table");
+  if (!table) {
+    alert("没有数据可以复制！");
+    return;
+  }
+
+  let tsv = "";
+  for (const row of table.rows) {
+    // 忽略每行的第一个单元格（行号）
+    const cells = Array.from(row.cells).slice(1).map(cell => cell.innerText);
+    tsv += cells.join("\t") + "\n";
+  }
+
+  navigator.clipboard.writeText(tsv).then(() => {
+    alert("结果已复制到剪贴板！");
+  }).catch(err => {
+    alert("复制失败，请手动尝试。");
+  });
+}
   </script>
+
 </body>
 </html>
